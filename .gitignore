@@ -1,0 +1,23 @@
+venv/
+/kaggle.json
+dataset/
+testing\ dataset/
+app/google_images
+/shelf/
+/workspace.xml
+/httpRequests/
+/dataSources/
+/dataSources.local.xml
+# datasets
+dataset/
+testing\ dataset/
+google_images/
+
+# models
+*.h5
+trained_model/
+
+# junk
+.idea/
+New folder/
+*.lnk
