@@ -5,49 +5,63 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import ModelCheckpoint
 
 # === CONFIG ===
-MODEL_PATH = r"C:\Users\Jagdish singh\OneDrive\Desktop\project\app\trained_model\plant_disease_prediction_model.h5"
+# Updated to match your actual file location in the sidebar
+working_dir = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(working_dir, "..", "plant_disease_model2_v1.h5")
 
+# Path where your new images are stored
+train_data_dir = os.path.join(working_dir, "google_images") 
 
-  # Path to your trained model
-FINE_TUNE_DIR = 'app/google_images'  # Folder where your Google images are stored
-IMG_SIZE = (224, 224)  # Update if your model uses different size
+IMG_SIZE = (224, 224)
 BATCH_SIZE = 4
-EPOCHS = 5  # Few epochs since small dataset
+EPOCHS = 10 
 
-# === Load your existing model ===
-model = load_model(MODEL_PATH)
-print("Loaded existing model.")
+# === 1. Load Model with Error Handling ===
+try:
+    model = load_model(MODEL_PATH)
+    print("✅ Original model loaded.")
+except Exception as e:
+    print(f"❌ Error loading model: {e}")
+    # If load_model fails (Python 3.13 bug), you must rebuild architecture as done in main.py
+    exit()
 
-# === Freeze base layers (optional) ===
-# You can skip this if you want to train all layers
-for layer in model.layers[:-1]:  # Freeze all except last
+# === 2. Freeze Layers (Transfer Learning) ===
+# We freeze the early layers to keep the "plant knowledge" 
+# and only train the "last layers" on your new images.
+for layer in model.layers[:-2]: 
     layer.trainable = False
-print("Base layers frozen.")
+print("❄️ Base layers frozen.")
 
-# === Prepare image data ===
-datagen = ImageDataGenerator(rescale=1./255)
+# === 3. Prepare Data ===
+datagen = ImageDataGenerator(
+    rescale=1./255,
+    rotation_range=20,
+    horizontal_flip=True
+)
 
-train_data_dir = os.path.abspath("google_images")
-train_generator = datagen.flow_from_directory(train_data_dir,     target_size=IMG_SIZE,
+if not os.path.exists(train_data_dir):
+    print(f"❌ Folder not found: {train_data_dir}")
+    exit()
+
+train_generator = datagen.flow_from_directory(
+    train_data_dir,
+    target_size=IMG_SIZE,
     batch_size=BATCH_SIZE,
-    class_mode='categorical')
+    class_mode='categorical' # Ensure folder count matches model output (38)
+)
 
-# === Optional: Check number of classes ===
-print("Classes detected:", train_generator.class_indices)
-
-# === Recompile the model ===
-model.compile(optimizer='adam',
+# === 4. Compile & Train ===
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 
-# === Save the best fine-tuned model ===
 checkpoint = ModelCheckpoint("model_finetuned.h5", save_best_only=True, monitor="loss")
 
-# === Fine-tune ===
+print("🚀 Starting Fine-Tuning...")
 model.fit(
     train_generator,
     epochs=EPOCHS,
     callbacks=[checkpoint]
 )
 
-print("Fine-tuning complete. Saved as model_finetuned.h5")
+print("✅ Fine-tuning complete. Saved as model_finetuned.h5")
