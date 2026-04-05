@@ -6,7 +6,6 @@ import streamlit as st
 from PIL import Image
 from tensorflow.keras import layers, models
 
-# --- 1. SET UP PATHS ---
 working_dir = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(working_dir, "..", "plant_disease_model2_v1.h5")
 class_indices_path = os.path.join(working_dir, "class_indices.json")
