@@ -27,7 +27,7 @@ PLANT_DISEASE_PREDICTION/
 🚀 Installation & Setup
 1. Clone the Repository
 Bash
-git clone https://github.com/your-username/plant-disease-prediction.git
+git clone https://github.com/harshit11purohit/Plant-Disease-Prediction.git
 cd plant-disease-prediction
 2. Install Dependencies
 Note: Optimized for Python 3.13 environments.
